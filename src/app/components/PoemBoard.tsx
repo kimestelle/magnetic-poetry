@@ -349,7 +349,7 @@ export default function PoemBoard() {
           }}
         >
           <div ref={measureRef} style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}>
-            <div className="magnet" style={{ position: 'absolute' }} />
+            <div className="magnet" style={{ position: 'absolute', userSelect: 'none' }} />
           </div>
 
           {words.map((word) => (
@@ -358,7 +358,7 @@ export default function PoemBoard() {
               onMouseDown={(e) => handleMouseDown(e, word)}
               onTouchStart={(e) => handleTouchStart(e, word)}
               onTouchMove={(e) => handleTouchMove(e)}
-              onTouchEnd={() => handleTouchEnd}
+              onTouchEnd={handleTouchEnd}
               className="magnet"
               style={{
                 position: 'absolute',
