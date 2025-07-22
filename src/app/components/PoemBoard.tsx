@@ -314,7 +314,7 @@ export default function PoemBoard() {
   return (
     <div ref={scrollContainerRef} className="w-full h-[100svh] flex justify-center items-center overflow-hidden">
       {/* outer wrapper */}
-      <div className="w-[min(85vw,65vh)] h-auto flex flex-col items-center justify-center gap-2">
+      <div className="w-[min(85vw,65vh)] h-auto flex flex-col items-center justify-center gap-2 user-select-none">
         {/* top bar */}
         <div className="w-full flex flex-row justify-between items-center font-bold">
           <h2 className='flex-shrink-0'>
@@ -345,6 +345,7 @@ export default function PoemBoard() {
             aspectRatio: '3 / 4',
             backgroundColor: '#f5f5f5', 
             overflow: 'hidden',
+            userSelect: 'none',
           }}
         >
           <div ref={measureRef} style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}>
