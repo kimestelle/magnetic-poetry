@@ -40,8 +40,12 @@ export default function PoemSnapshot({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    canvas.width = width;
-    canvas.height = height;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    ctx.scale(dpr, dpr);
 
     const fontSize = Math.min(width * 0.03, height * 0.0225) * 1.1;
 
@@ -129,7 +133,7 @@ export default function PoemSnapshot({
         ctx.save();
         ctx.globalAlpha = 1;
         ctx.shadowColor = 'rgba(255,255,255,0.6)';
-        ctx.shadowBlur = fontSize * 3;
+        ctx.shadowBlur = fontSize * 3 * dpr;
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 0;
 
@@ -165,7 +169,7 @@ export default function PoemSnapshot({
       }
 
       ctx.save();
-      ctx.filter = 'blur(18px)';
+      ctx.filter = `blur(${18 * dpr}px)`;
       if (mirror) {
         ctx.translate(width, 0);
         ctx.scale(-1, 1);
