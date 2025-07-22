@@ -59,7 +59,7 @@ export default function PoemSnapshot({
     const drawNoise = () => {
     const noise = new Image();
     noise.onload = () => {
-        const scale = 2; // tile size scale
+        const scale = 2 * dpr;; // tile size scale
 
         const patternCanvas = document.createElement('canvas');
         patternCanvas.width = noise.width * scale;
@@ -109,7 +109,7 @@ export default function PoemSnapshot({
 
         ctx.shadowColor = 'transparent';
         ctx.strokeStyle = '#ededed';
-        ctx.lineWidth = 0.1 * fontSize;
+        ctx.lineWidth = 0.1 * fontSize * dpr;
         ctx.strokeRect(-boxWidth / 2, -boxHeight / 2, boxWidth, boxHeight);
 
         ctx.fillStyle = 'black';
