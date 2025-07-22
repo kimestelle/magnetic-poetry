@@ -102,8 +102,8 @@ export default function PoemSnapshot({
 
         ctx.fillStyle = 'white';
         ctx.shadowColor = 'rgba(0,0,0,0.5)';
-        ctx.shadowOffsetX = 0.1 * fontSize;
-        ctx.shadowOffsetY = 0.15 * fontSize;
+        ctx.shadowOffsetX = 0.1 * fontSize * dpr;
+        ctx.shadowOffsetY = 0.15 * fontSize * dpr;
         ctx.shadowBlur = 0;
         ctx.fillRect(-boxWidth / 2, -boxHeight / 2, boxWidth, boxHeight);
 
@@ -144,38 +144,45 @@ export default function PoemSnapshot({
     drawInnerGlow();
 
     const drawCoverImage = (
-      source: HTMLImageElement | HTMLVideoElement | HTMLCanvasElement,
-      mirror = false
+    source: HTMLImageElement | HTMLVideoElement | HTMLCanvasElement,
+    mirror = false
     ) => {
-      const rawWidth =
-        source instanceof HTMLVideoElement ? source.videoWidth : source.width;
-      const rawHeight =
-        source instanceof HTMLVideoElement ? source.videoHeight : source.height;
+        const rawWidth =
+            source instanceof HTMLVideoElement ? source.videoWidth : source.width;
+        const rawHeight =
+            source instanceof HTMLVideoElement ? source.videoHeight : source.height;
 
-      const imgRatio = rawWidth / rawHeight;
-      const canvasRatio = width / height;
+        const imgRatio = rawWidth / rawHeight;
+        const canvasRatio = width / height;
 
-      let sx = 0,
-        sy = 0,
-        sw = rawWidth,
-        sh = rawHeight;
+        let sx = 0, sy = 0, sw = rawWidth, sh = rawHeight;
 
-      if (imgRatio > canvasRatio) {
-        sw = sh * canvasRatio;
-        sx = (rawWidth - sw) / 2;
-      } else {
-        sh = sw / canvasRatio;
-        sy = (rawHeight - sh) / 2;
-      }
+        if (imgRatio > canvasRatio) {
+            sw = sh * canvasRatio;
+            sx = (rawWidth - sw) / 2;
+        } else {
+            sh = sw / canvasRatio;
+            sy = (rawHeight - sh) / 2;
+        }
 
-      ctx.save();
-      ctx.filter = `blur(${18 * dpr}px)`;
-      if (mirror) {
-        ctx.translate(width, 0);
-        ctx.scale(-1, 1);
-      }
-      ctx.drawImage(source, sx, sy, sw, sh, 0, 0, width, height);
-      ctx.restore();
+        // offscreen canvas
+        const offscreen = document.createElement('canvas');
+        offscreen.width = width;
+        offscreen.height = height;
+        const octx = offscreen.getContext('2d');
+        if (!octx) return;
+
+        if (mirror) {
+            octx.translate(width, 0);
+            octx.scale(-1, 1);
+        }
+
+        octx.drawImage(source, sx, sy, sw, sh, 0, 0, width, height);
+
+        ctx.save();
+        ctx.filter = `blur(${18 * dpr}px)`;
+        ctx.drawImage(offscreen, 0, 0);
+        ctx.restore();
     };
 
     const drawBackground = () => {
