@@ -23,6 +23,15 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: 'EB Garamond', serif;
+  width: 100svw;
+  height: 100svh;
+  overflow: hidden;
+}
+
+main {
+  width: 100svw;
+  height: 100svh;
+  overflow: hidden;
 }
 
 input:active, input:focus,

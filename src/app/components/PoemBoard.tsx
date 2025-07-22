@@ -258,6 +258,59 @@ export default function PoemBoard() {
     };
   }, [handleMouseMove, handleMouseUp]);
 
+  const handleTouchStart = (e: React.TouchEvent, word: WordItem) => {
+  e.preventDefault();
+  setDraggingId(word.id);
+
+  const boardRect = boardRef.current?.getBoundingClientRect();
+  const el = (e.currentTarget as HTMLElement).getBoundingClientRect();
+
+  if (boardRect) {
+    const touch = e.touches[0];
+    const centerX = el.left + el.width / 2;
+    const centerY = el.top + el.height / 2;
+    setOffset({ x: touch.clientX - centerX, y: touch.clientY - centerY });
+  }
+};
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault();
+    if (!draggingId || !boardRef.current) return;
+
+    const touch = e.touches[0];
+    const boardRect = boardRef.current.getBoundingClientRect();
+
+    const rawX = touch.clientX - boardRect.left - offset.x;
+    const rawY = touch.clientY - boardRect.top - offset.y;
+
+    const x = (rawX / boardRect.width) * 100;
+    const y = (rawY / boardRect.height) * 100;
+
+    const deleteZone = deleteZoneRef.current?.getBoundingClientRect();
+    const cursorPoint = new DOMRect(touch.clientX, touch.clientY, 1, 1);
+    if (deleteZone && isOverlapping(cursorPoint, deleteZone)) {
+      setIsInDeleteZone(true);
+    } else {
+      setIsInDeleteZone(false);
+    }
+
+    setWords((prev) =>
+      prev.map((word) =>
+        word.id === draggingId
+          ? { ...word, xPercent: Math.min(Math.max(x, 0), 100), yPercent: Math.min(Math.max(y, 0), 100) }
+          : word
+      )
+    );
+  };
+
+  const handleTouchEnd = () => {
+    if (isInDeleteZone && draggingId) {
+      setWords((prev) => prev.filter((w) => w.id !== draggingId));
+    }
+    setDraggingId(null);
+    setIsInDeleteZone(false);
+  };
+
   return (
     <div ref={scrollContainerRef} className="w-full h-[100svh] flex justify-center items-center overflow-hidden">
       {/* outer wrapper */}
@@ -302,6 +355,9 @@ export default function PoemBoard() {
             <div
               key={word.id}
               onMouseDown={(e) => handleMouseDown(e, word)}
+              onTouchStart={(e) => handleTouchStart(e, word)}
+              onTouchMove={(e) => handleTouchMove(e)}
+              onTouchEnd={() => handleTouchEnd}
               className="magnet"
               style={{
                 position: 'absolute',
@@ -417,13 +473,13 @@ export default function PoemBoard() {
               }}
             />
           <button
-            onClick={() => generateWord}
+            onClick={() => generateWord()}
             className="bg-neutral-100 shadow hover:bg-neutral-200 px-1 rounded"
           >
             +1
           </button>
           <button
-            onClick={() => generateWords}
+            onClick={() => generateWords()}
             className="bg-neutral-100 shadow hover:bg-neutral-200 px-1 rounded"
           >
             +3
