@@ -324,7 +324,7 @@ export default function PoemBoard() {
           <div className ="flex flex-shrink-0 gap-2">
             <button 
               onClick={() => toggleVisualMode()} 
-              className="flex-shrink-0 text-neutral-400">
+              className="flex-shrink-0 text-white bg-black hover:bg-neutral-500">
               {visualMode}
             </button>
             <button
@@ -386,7 +386,6 @@ export default function PoemBoard() {
               height: '25%',
               zIndex: 10,
               pointerEvents: 'none',
-              display: 'none', // hide from snapshot
             }}
           />
 
@@ -460,11 +459,11 @@ export default function PoemBoard() {
 
         {/* bottom bar */}
         <div className="w-full flex flex-row gap-2 font-bold justify-between">
-          <div className="flex flex-row gap-1.5">
+          <div className="flex flex-row gap-[1svh]">
             <input 
               type="text"
               placeholder="+ word"
-              className="bg-neutral-200 shadow px-1 rounded"
+              className="bg-neutral-200"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && e.currentTarget.value.trim()) {
                   const newWord = createWord(e.currentTarget.value.trim(), []);
@@ -475,20 +474,20 @@ export default function PoemBoard() {
             />
           <button
             onClick={() => generateWord()}
-            className="bg-neutral-100 shadow hover:bg-neutral-200 px-1 rounded"
+            className="bg-neutral-200 hover:bg-neutral-300"
           >
             +1
           </button>
           <button
             onClick={() => generateWords()}
-            className="bg-neutral-100 shadow hover:bg-neutral-200 px-1 rounded"
+            className="bg-neutral-200 hover:bg-neutral-300"
           >
             +3
           </button>
           </div>
           <button
             onClick={() => setWords([])}
-            className="bg-black text-white px-2 rounded hover:bg-neutral-500 transition-colors"
+            className="bg-black text-white hover:bg-neutral-500 transition-colors"
           >
             restart
           </button>
