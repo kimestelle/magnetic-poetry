@@ -49,7 +49,7 @@ export default function PoemBoard({ boardId, isShared }: PoemBoardProps) {
   }, []);
 
   useEffect(() => {
-    const url = "ws://localhost:8080";
+    const url = "wss://magnetic-poetry.fly.dev/";
     if (!boardId || !isShared) return;
 
     setIsWsSynced(false);
