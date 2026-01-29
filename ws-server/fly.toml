@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for ws-server-thrumming-water-2410 on 2026-01-28T22:09:46-05:00
+# fly.toml app configuration file generated for magnetic-poetry on 2026-01-29T03:13:05Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'ws-server-thrumming-water-2410'
+app = 'magnetic-poetry'
 primary_region = 'iad'
 
 [build]
