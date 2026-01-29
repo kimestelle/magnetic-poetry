@@ -10,7 +10,7 @@ type WordItem = {
   rotate: number;
 };
 
-type VisualMode = 'image' | 'front-camera' | 'back-camera' | 'white';
+type VisualMode = 'gradient' | 'front-camera' | 'back-camera' | 'white';
 
 type Props = {
   words: WordItem[];
@@ -26,7 +26,7 @@ export default function PoemSnapshot({
   words,
   backgroundImage,
   webcamVideo,
-  visualMode = 'image',
+  visualMode = 'gradient',
   width = 1080,
   height = 1440,
   onCapture,
