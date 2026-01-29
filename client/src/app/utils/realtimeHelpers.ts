@@ -1,4 +1,5 @@
 import type { BoardAction } from "./actionHelpers";
+import type { WordItem } from "./boardHelpers";
 
 export type RealtimeOpts = {
   url: string;
@@ -7,26 +8,53 @@ export type RealtimeOpts = {
   onStatus?: (s: { connected: boolean }) => void;
 };
 
-function safeParse(data: unknown): any | null {
+function safeParse(data: unknown): unknown | null {
   if (typeof data !== "string") return null;
   try {
-    return JSON.parse(data);
+    return JSON.parse(data) as unknown;
   } catch {
     return null;
   }
 }
 
-function isBoardAction(msg: any): msg is BoardAction {
-  if (!msg || typeof msg !== "object") return false;
-  const t = msg.type;
-  return (
-    t === "SET_STATE" ||
-    t === "ADD_WORD" ||
-    t === "ADD_WORDS" ||
-    t === "MOVE_WORD" ||
-    t === "DELETE_WORD" ||
-    t === "RESET"
-  );
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null;
+}
+
+function isSyncStateMsg(v: unknown): v is { type: "SYNC_STATE"; words: WordItem[] } {
+  if (!isRecord(v)) return false;
+  if (v.type !== "SYNC_STATE") return false;
+  return Array.isArray(v.words);
+}
+
+function isBoardAction(v: unknown): v is BoardAction {
+  if (!isRecord(v)) return false;
+
+  const t = v.type;
+  if (typeof t !== "string") return false;
+
+  switch (t) {
+    case "SET_STATE":
+      return Array.isArray(v.words);
+
+    case "ADD_WORD":
+      return isRecord(v.word);
+
+    case "ADD_WORDS":
+      return Array.isArray(v.words);
+
+    case "MOVE_WORD":
+      return typeof v.id === "string" && typeof v.xPercent === "number" && typeof v.yPercent === "number";
+
+    case "DELETE_WORD":
+      return typeof v.id === "string";
+
+    case "RESET":
+      return true;
+
+    default:
+      return false;
+  }
 }
 
 // websocket client for a board
@@ -47,11 +75,11 @@ export function createBoardSocketClient(opts: RealtimeOpts) {
     onStatus?.({ connected: false });
   });
 
-  ws.addEventListener("message", (ev) => {
+  ws.addEventListener("message", (ev: MessageEvent) => {
     const msg = safeParse(ev.data);
     if (!msg) return;
 
-    if (msg.type === "SYNC_STATE" && Array.isArray(msg.words)) {
+    if (isSyncStateMsg(msg)) {
       onAction({ type: "SET_STATE", words: msg.words });
       return;
     }
@@ -71,20 +99,22 @@ export function createBoardSocketClient(opts: RealtimeOpts) {
   return { ws, sendAction, close };
 }
 
-
-export function throttleMs<T extends (...args: any[]) => void>(fn: T, ms: number): T {
+export function throttleMs<Args extends unknown[]>(
+  fn: (...args: Args) => void,
+  ms: number
+): (...args: Args) => void {
   let last = 0;
-  let timer: number | null = null;
-  let latestArgs: any[] | null = null;
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  let latestArgs: Args | null = null;
 
-  const throttled = ((...args: any[]) => {
+  return (...args: Args) => {
     const now = Date.now();
     latestArgs = args;
 
     const remaining = ms - (now - last);
     if (remaining <= 0) {
       if (timer) {
-        window.clearTimeout(timer);
+        clearTimeout(timer);
         timer = null;
       }
       last = now;
@@ -95,13 +125,12 @@ export function throttleMs<T extends (...args: any[]) => void>(fn: T, ms: number
 
     if (timer) return;
 
-    timer = window.setTimeout(() => {
+    timer = setTimeout(() => {
       timer = null;
       last = Date.now();
-      if (latestArgs) fn(...(latestArgs as any[]));
+      if (latestArgs) fn(...latestArgs);
       latestArgs = null;
     }, remaining);
-  }) as T;
-
-  return throttled;
+  };
 }
+
