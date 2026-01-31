@@ -15,6 +15,7 @@ import {
   type WordItem,
 } from '../utils/boardHelpers';
 import { createBoardSocketClient, throttleMs } from '../utils/realtimeHelpers';
+import DropDown from './DropDown';
 
 type VisualMode = 'gradient' | 'front-camera' | 'back-camera' | 'white';
 type PoemBoardProps = {
@@ -39,6 +40,7 @@ export default function PoemBoard({ boardId, isShared }: PoemBoardProps) {
   const [visualMode, setVisualMode] = useState<VisualMode>('gradient');
   const [takeSnapshot, setTakeSnapshot] = useState(false);
 
+  const [boardInput, setBoardInput] = useState("");
   const [isWsSynced, setIsWsSynced] = useState(false);
 
   // realtime connection
@@ -65,7 +67,7 @@ export default function PoemBoard({ boardId, isShared }: PoemBoardProps) {
     });
 
     return () => rtRef.current?.close();
-  }, [boardId]);
+  }, [boardId, isShared]);
 
   const sendMoveThrottled = useRef(
     throttleMs((id: string, x: number, y: number) => {
@@ -98,17 +100,6 @@ export default function PoemBoard({ boardId, isShared }: PoemBoardProps) {
   }, [wordPool, apply]);
 
   const generateWord = useCallback(() => generateWords(1), [generateWords]);
-
-  const toggleVisualMode = () => {
-    setVisualMode((prev) => {
-      switch (prev) {
-        case 'gradient': return 'front-camera';
-        case 'front-camera': return 'back-camera';
-        case 'back-camera': return 'white';
-        case 'white': return 'gradient';
-      }
-    });
-  };
 
   // load word pool
   useEffect(() => {
@@ -180,7 +171,7 @@ export default function PoemBoard({ boardId, isShared }: PoemBoardProps) {
     if (words.length === 0 && wordPool.length > 0) {
       generateWords(9);
     }
-  }, [isWsSynced, wordPool, words.length, generateWords]);
+  }, [isShared, isWsSynced, wordPool, words.length, generateWords]);
 
   // dragging handlers
   const handleMouseDown = (e: React.MouseEvent, word: WordItem) => {
@@ -283,14 +274,80 @@ export default function PoemBoard({ boardId, isShared }: PoemBoardProps) {
         {/* top bar */}
         <div className="w-full flex flex-row justify-between items-center font-bold">
           <Link href="/" className="flex-shrink-0 select-none cursor-pointer"><h2>magnet poetry</h2></Link>
-          <div className="flex w-full border-b bg-neutral-100 border-dotted mx-2" />
-          <div className="flex flex-shrink-0 gap-2">
-            <button onClick={toggleVisualMode} className="flex-shrink-0 text-white bg-black hover:bg-neutral-500">
-              	&#8644; {visualMode}
-            </button>
-            <button onClick={() => setTakeSnapshot(true)} className="flex-shrink-0">
-              save as image
-            </button>
+          <div className="flex-1 border-b border-black/25 border-dotted mx-3 pointer-events-none" />
+          <div className="flex flex-shrink-0 gap-3">
+          <DropDown label={"board:" + (boardId ? boardId : "local")}>
+            <div data-dd-item className="flex flex-col gap-[3px]">
+              <input
+                className="thin-button bg-white/80 px-2 py-1 w-44"
+                placeholder="enter board id"
+                value={boardInput}
+                onChange={(e) => setBoardInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter") return;
+                  const id = boardInput.trim();
+                  if (!id) return;
+                  window.location.href = `/${id}`;
+                }}
+              />
+              <div className="flex gap-[3px]">
+                <button
+                  className="thin-button bg-white/80 px-2 py-1"
+                  onClick={() => {
+                    const id = boardInput.trim();
+                    if (!id) return;
+                    window.location.href = `/${id}`;
+                  }}
+                >
+                  join
+                </button>
+                <button
+                  className="thin-button bg-white/80 px-2 py-1"
+                  onClick={() => {
+                    window.location.href = "/";
+                  }}
+                >
+                  new local
+                </button>
+              </div>
+
+              {boardId && (
+                <button
+                  data-dd-item
+                  className="thin-button bg-white/80 px-2 py-1 text-left"
+                  onClick={() => {
+                    const url = `${window.location.origin}/board/${boardId}`;
+                    navigator.clipboard.writeText(url).then(() => alert("Board link copied!"));
+                  }}
+                >
+                  copy share link
+                </button>
+              )}
+            </div>
+          </DropDown>
+            <DropDown label={"bg:" + (visualMode)}>
+              <button data-dd-item className="thin-button bg-white/80 px-2 py-1 text-left" onClick={() => setVisualMode("gradient")}>
+                gradient
+              </button>
+              <button data-dd-item className="thin-button bg-white/80 px-2 py-1 text-left" onClick={() => setVisualMode("front-camera")}>
+                front camera
+              </button>
+              <button data-dd-item className="thin-button bg-white/80 px-2 py-1 text-left" onClick={() => setVisualMode("back-camera")}>
+                bacsk camera
+              </button>
+              <button data-dd-item className="thin-button bg-white/80 px-2 py-1 text-left" onClick={() => setVisualMode("white")}>
+                white
+              </button>
+            </DropDown>
+            <DropDown label="save" bold={true}>
+              <button
+                data-dd-item
+                className="thin-button bg-white/80 px-2 py-1 text-left"
+                onClick={() => setTakeSnapshot(true)}
+              >
+                .png
+              </button>
+            </DropDown>
           </div>
         </div>
 
@@ -326,7 +383,7 @@ export default function PoemBoard({ boardId, isShared }: PoemBoardProps) {
                 transform: `translate(-50%, -50%) scale(${word.id === draggingId && isInDeleteZone ? 1 - word.yPercent / 250 : 1})`,
                 transition: 'transform 0.1s ease',
                 rotate: `${word.rotate}deg`,
-                zIndex: word.id === draggingId ? 10 : 1,
+                zIndex: word.id === draggingId ? 100 : 10,
               }}
             >
               <span className="magnet-inner">{word.text}</span>
@@ -397,6 +454,7 @@ export default function PoemBoard({ boardId, isShared }: PoemBoardProps) {
                   objectFit: 'cover',
                   filter: 'blur(8px)',
                   opacity: 0.4,
+                  pointerEvents: 'none',
                   transform: visualMode === 'front-camera' ? 'scaleX(-1)' : 'none',
                   zIndex: 0,
                 }}
@@ -413,7 +471,7 @@ export default function PoemBoard({ boardId, isShared }: PoemBoardProps) {
             <input
               type="text"
               placeholder="+ word"
-              className="bg-neutral-200"
+              className="bg-neutral-100"
               onKeyDown={(e) => {
                 if (e.key !== 'Enter') return;
                 const text = e.currentTarget.value.trim();
@@ -431,12 +489,12 @@ export default function PoemBoard({ boardId, isShared }: PoemBoardProps) {
                 e.currentTarget.value = '';
               }}
             />
-            <button onClick={generateWord} className="bg-neutral-200 hover:bg-neutral-300">+1</button>
-            <button onClick={() => generateWords(3)} className="bg-neutral-200 hover:bg-neutral-300">+3</button>
+            <button onClick={generateWord} className="bg-neutral-100 hover:bg-neutral-300">+1</button>
+            <button onClick={() => generateWords(3)} className="bg-neutral-100 hover:bg-neutral-300">+3</button>
           </div>
           <button
             onClick={() => apply(Actions.reset())}
-            className="bg-black text-white hover:bg-neutral-500 transition-colors"
+            className="transition-colors"
           >
             restart
           </button>

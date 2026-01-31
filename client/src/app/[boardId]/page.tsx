@@ -1,4 +1,4 @@
-import PoemBoard from '../../components/PoemBoard';
+import PoemBoard from '../components/PoemBoard';
 
 export default async function Page({
   params,

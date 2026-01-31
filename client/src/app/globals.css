@@ -1,27 +1,8 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: white;
+  color: #151515;
   font-family: 'EB Garamond', serif;
   width: 100svw;
   height: 100svh;
@@ -52,17 +33,21 @@ button {
   user-select: none;
 }
 
+.thin-button {
+  font-weight: 400;
+  cursor: pointer;
+}
+
 ul {
   list-style: circle;
   padding-left: 2em;
 }
 
-.magnet {
-  pointer-events: auto;
-  cursor: grab;
-}
+.magnet, .magnet * { cursor: grab; }
+.magnet:active, .magnet:active * { cursor: grabbing; }
 
 .magnet-inner {
+  cursor: inherit;
   display: inline-block;
   padding: 0em 0.2em;
   background: white;
